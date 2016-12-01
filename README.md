@@ -16,6 +16,6 @@ python setup.py install
 This example demonstrates how to make a chrome cast available on another subnet.
 This demonstration assumes that the Chromecast's IP address is able to be determined by resolving the `Chromecast` hostname.
 ```
-cd Static-UPnP/examples
-static_upnp --config-dir Chromecast
+cd Static-UPnP
+static_upnp --config-dir examples/Chromecast
 ```
