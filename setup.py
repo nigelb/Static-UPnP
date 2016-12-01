@@ -28,7 +28,7 @@ setup(name='static_upnp',
       install_requires=["pyip", "schedule"],
       entry_points={
           "console_scripts": [
-              "static_upnp = static_upnp.static_upnp:main",
+              "static_upnp = static_upnp.static:main",
           ]
       },
 )

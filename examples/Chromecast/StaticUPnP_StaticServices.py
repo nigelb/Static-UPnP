@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 import time
 import socket
 
-from static_upnp.static_upnp import StaticService
+from static_upnp.static import StaticService
 
 def get_date():
     ts=datetime.now()+timedelta(seconds=time.timezone)

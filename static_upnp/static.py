@@ -35,14 +35,14 @@ class StaticService:
 
 def main():
     argParse = ArgumentParser(description="static_upnp will announce and respond to upnp search requests for the statically configured devices.")
-    argParse.add_argument("--config-dir",metavar="<config_dir>", dest="config_dir", action="store", help="The location of the config directory, default: /etc/UPnPRelay")
+    argParse.add_argument("--config-dir",metavar="<config_dir>", dest="config_dir", action="store", help="The location of the config directory.")
     args = argParse.parse_args()
 
     try:
         args.config_dir = os.path.abspath(args.config_dir)
         sys.path.append(args.config_dir)
-        import UPnPRelay_StaticServices
-        import UPnPRelay_Permissions
+        import StaticUPnP_StaticServices
+        import StaticUPnP_Permissions
         # import UPnPRelay_Paths
 
     except (AttributeError, ImportError) as e:
@@ -57,9 +57,9 @@ def main():
     logging.basicConfig(format=FORMAT,level=logging.DEBUG)
     logger = logging.getLogger("Main")
     upnp = UPnPServiceResponder(
-            services=UPnPRelay_StaticServices.services,
-            user=UPnPRelay_Permissions.user,
-            group=UPnPRelay_Permissions.group
+            services=StaticUPnP_StaticServices.services,
+            user=StaticUPnP_Permissions.user,
+            group=StaticUPnP_Permissions.group
     )
 
     def signal_handler(signal, frame):
