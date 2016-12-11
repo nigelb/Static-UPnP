@@ -51,8 +51,8 @@ def main():
         return
 
     #Setup up the logging
-    # FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s'
-    FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s File "%(pathname)s", line %(lineno)d, in %(funcName)s - %(message)s'
+    FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s'
+    # FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s File "%(pathname)s", line %(lineno)d, in %(funcName)s - %(message)s'
 
 
     logging.basicConfig(format=FORMAT,level=logging.DEBUG)
