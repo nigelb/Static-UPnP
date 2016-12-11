@@ -46,20 +46,19 @@ def main():
         # import UPnPRelay_Paths
 
     except (AttributeError, ImportError) as e:
-        print "Could not find configuration in %s, specify with --config-dir option."%(args.config_dir)
+        print ("Could not find configuration in %s, specify with --config-dir option."%(args.config_dir))
         argParse.print_help()
         return
 
     #Setup up the logging
-    FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s'
+    # FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s'
+    FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s File "%(pathname)s", line %(lineno)d, in %(funcName)s - %(message)s'
 
 
     logging.basicConfig(format=FORMAT,level=logging.DEBUG)
     logger = logging.getLogger("Main")
     upnp = UPnPServiceResponder(
             services=StaticUPnP_StaticServices.services,
-            user=StaticUPnP_Permissions.user,
-            group=StaticUPnP_Permissions.group
     )
 
     def signal_handler(signal, frame):
