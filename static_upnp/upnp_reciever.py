@@ -16,6 +16,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import ctypes
+import queue
 import socket
 
 import grp
@@ -24,6 +25,8 @@ import pwd
 import schedule
 
 import time
+
+import signal
 import struct
 from collections import defaultdict
 
@@ -99,6 +102,9 @@ class UPnPServiceResponder:
 
 
     def schedule_handler(self, running):
+        self.logger = logging.getLogger("UPnPServiceResponder.schedule_handler")
+        self.logger.info("PID: %s"%os.getpid())
+        register_worker_signal_handler(self.logger)
         time.sleep(2)
         self.do_notify(b"ssdp:alive")
         sch = schedule.Scheduler()
@@ -118,22 +124,35 @@ class UPnPServiceResponder:
                 self.sock.sendto(response_data, (self.address, self.port))
 
     def socket_handler(self, queue, running):
+        self.logger = logging.getLogger("UPnPServiceResponder.schedule_handler")
+        self.logger.info("PID: %s"%os.getpid())
+        register_worker_signal_handler(self.logger)
         sock = self.sock
         mreq = struct.pack('4sl', socket.inet_aton(self.address), socket.INADDR_ANY)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         while running.value:
-            rec = sock.recvfrom(self.buffer_size)
-            self.logger.debug(rec)
-            queue.put(rec)
+            try:
+                rec = sock.recvfrom(self.buffer_size)
+                self.logger.debug(rec)
+                queue.put(rec)
+            except InterruptedError as e:
+                self.logger.error(e)
+
+        self.do_notify(b"ssdp:goodbye")
+        self.sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
     def run(self):
-        # self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-
         while self.running.value:
-            request = parse_request(self.queue.get())
-            if request is None: continue
-            if request.METHOD == b"M-SEARCH": self.respond_ok(request)
+            try:
+                request = parse_request(self.queue.get(block=False))
+                if request is None:
+                    continue
+                if request.METHOD == b"M-SEARCH": self.respond_ok(request)
+            except queue.Empty as error:
+                time.sleep(0.1)
+
+        self.sock.close()
 
     def respond_ok(self, request):
         if self.services is not None:
@@ -181,7 +200,7 @@ class UPnPServiceResponder:
         self.running.value = 0
         self.schedule_thread.join()
         self.reciever_thread.join()
-        self.do_notify(b"ssdp:goodbye")
+
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")
 
@@ -236,3 +255,9 @@ class SpoofingUPnPServiceResponder(UPnPServiceResponder):
 
         # Ensure a very conservative umask
         old_umask = os.umask(0o077)
+
+
+def register_worker_signal_handler(logger):
+    def signal_handler(signal, frame):
+        logger.info("Ctrl+C Pressed...")
+    signal.signal(signal.SIGINT, signal_handler)
