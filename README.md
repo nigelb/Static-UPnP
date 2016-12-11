@@ -2,6 +2,8 @@
 Static UPnP responds to upnp search requests with staticlly configures responses.
 This can be usefull to make devices available on other subnets, or to make devices available that are not responding to search requests.
 
+This works with python2.7, but there is a python3 branch.
+
 # Installation
 ```
 git clone https://github.com/nigelb/Static-UPnP.git
