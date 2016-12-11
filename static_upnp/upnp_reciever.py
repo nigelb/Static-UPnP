@@ -135,7 +135,7 @@ class UPnPServiceResponder:
                 rec = sock.recvfrom(self.buffer_size)
                 self.logger.debug(rec)
                 queue.put(rec)
-            except InterruptedError as e:
+            except Exception as e:
                 self.logger.error(e)
 
         self.do_notify(b"ssdp:goodbye")
