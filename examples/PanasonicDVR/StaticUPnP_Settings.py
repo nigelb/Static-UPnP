@@ -21,7 +21,13 @@ permissions = {
     'group': "nobody"
 }
 
+# By default all interfaces that have an AF_INET address will be registered with the multicast group.
+# If the include list has entries then only these interface's address will be registered.
+# If the exclude list had entries then these will be removed from the current list of interfaces and they will not be
+#   registered.
 interfaces = {
+    # "include": ["eth0"],
     "include": [],
+    # "exclude": ["eth1"]
     "exclude": []
 }
