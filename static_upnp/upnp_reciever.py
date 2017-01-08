@@ -16,23 +16,21 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import ctypes
-import queue
-import socket
-
 import grp
-import os
+import logging
 import pwd
-import schedule
-
-import time
-
+import queue
 import signal
-import struct
-from collections import defaultdict
-
+import socket
+import time
+import netifaces
+from argparse import Namespace
 from multiprocessing import Queue, Process, Value
 
-import logging
+import os
+import schedule
+from collections import defaultdict
+
 
 
 class AttributeDict(dict):
@@ -86,6 +84,11 @@ class UPnPServiceResponder:
         self.services = services
 
         self.setup_sockets()
+        import StaticUPnP_Settings
+        permissions = Namespace(**StaticUPnP_Settings.permissions)
+        print(permissions)
+        if permissions.drop_permissions:
+            self.drop_privileges(permissions.user, permissions.group)
 
         self.running = Value(ctypes.c_int, 1)
         self.queue = Queue()
@@ -98,6 +101,25 @@ class UPnPServiceResponder:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+
+        import StaticUPnP_Settings
+        interface_config = Namespace(**StaticUPnP_Settings.interfaces)
+        ifs = netifaces.interfaces()
+        if len(interface_config.include) > 0:
+            ifs = interface_config.include
+        if len(interface_config.exclude) > 0:
+            for iface in interface_config.exclude:
+                ifs.remove(iface)
+
+        for i in ifs:
+            addrs = netifaces.ifaddresses(i)
+            if netifaces.AF_INET in addrs:
+                for addr in addrs[netifaces.AF_INET]:
+                    self.logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
+                    mreq=socket.inet_aton(self.address)+socket.inet_aton(addr['addr'])
+                    self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+
         self.sock.bind(('', self.port))
 
 
@@ -128,8 +150,6 @@ class UPnPServiceResponder:
         self.logger.info("PID: %s"%os.getpid())
         register_worker_signal_handler(self.logger)
         sock = self.sock
-        mreq = struct.pack('4sl', socket.inet_aton(self.address), socket.INADDR_ANY)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         while running.value:
             try:
                 rec = sock.recvfrom(self.buffer_size)
@@ -204,6 +224,27 @@ class UPnPServiceResponder:
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")
 
+    def drop_privileges(self, uid_name, gid_name):
+        if os.getuid() != 0:
+            # We're not root so, like, whatever dude
+            self.logger.info("Not running as root. Cannot drop permissions.")
+            return
+
+        # Get the uid/gid from the name
+        running_uid = pwd.getpwnam(uid_name).pw_uid
+        running_gid = grp.getgrnam(gid_name).gr_gid
+
+        # Remove group privileges
+        os.setgroups([])
+
+        # Try setting the new uid/gid
+        os.setgid(running_gid)
+        os.setuid(running_uid)
+
+        # Ensure a very conservative umask
+        old_umask = os.umask(0o077)
+        self.logger.info("Changed permissions to: %s: %i, %s, %i"%(uid_name, running_uid, gid_name, running_gid))
+
 
 class SpoofingUPnPServiceResponder(UPnPServiceResponder):
     def __init__(self, address='239.255.255.250', port=1900, buffer_size=4096, services=None, user="nobody",
@@ -236,25 +277,6 @@ class SpoofingUPnPServiceResponder(UPnPServiceResponder):
         self.logger.debug(response_data)
         self.logger.debug(ip_packet)
         self.raw_sock.sendto(ip.assemble(ip_packet, 0), REQUEST.REMOTE)
-
-    def drop_privileges(self, uid_name, gid_name):
-        if os.getuid() != 0:
-            # We're not root so, like, whatever dude
-            return
-
-        # Get the uid/gid from the name
-        running_uid = pwd.getpwnam(uid_name).pw_uid
-        running_gid = grp.getgrnam(gid_name).gr_gid
-
-        # Remove group privileges
-        os.setgroups([])
-
-        # Try setting the new uid/gid
-        os.setgid(running_gid)
-        os.setuid(running_uid)
-
-        # Ensure a very conservative umask
-        old_umask = os.umask(0o077)
 
 
 def register_worker_signal_handler(logger):

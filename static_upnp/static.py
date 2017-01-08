@@ -42,8 +42,7 @@ def main():
         args.config_dir = os.path.abspath(args.config_dir)
         sys.path.append(args.config_dir)
         import StaticUPnP_StaticServices
-        import StaticUPnP_Permissions
-        # import UPnPRelay_Paths
+        import StaticUPnP_Settings
 
     except (AttributeError, ImportError) as e:
         print ("Could not find configuration in %s, specify with --config-dir option."%(args.config_dir))
