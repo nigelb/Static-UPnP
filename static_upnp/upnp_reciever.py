@@ -105,7 +105,7 @@ class UPnPServiceResponder:
         import StaticUPnP_Settings
         interface_config = Namespace(**StaticUPnP_Settings.interfaces)
         ip_addresses = StaticUPnP_Settings.ip_addresses
-        if len(ip_addresses) > 0:
+        if len(ip_addresses) == 0:
             import netifaces
             ifs = netifaces.interfaces()
             if len(interface_config.include) > 0:
