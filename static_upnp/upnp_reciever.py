@@ -122,6 +122,7 @@ class UPnPServiceResponder:
                         self.logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
 
         for ip in ip_addresses:
+            self.logger.info("Regestering multicast for: %s"%(ip))
             mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
             self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
