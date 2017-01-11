@@ -25,7 +25,8 @@ setup(name='static_upnp',
       author_email='nigel.blair@gmail.com',
       packages=find_packages(),
       zip_safe=False,
-      install_requires=["pyip", "schedule", "future", "netifaces"],
+      install_requires=["pyip", "schedule", "future"],
+      extras_require=["netifaces"],
       entry_points={
           "console_scripts": [
               "static_upnp = static_upnp.static:main",
