@@ -23,7 +23,6 @@ import queue
 import signal
 import socket
 import time
-import netifaces
 from argparse import Namespace
 from multiprocessing import Queue, Process, Value
 
@@ -102,22 +101,29 @@ class UPnPServiceResponder:
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
+
         import StaticUPnP_Settings
         interface_config = Namespace(**StaticUPnP_Settings.interfaces)
-        ifs = netifaces.interfaces()
-        if len(interface_config.include) > 0:
-            ifs = interface_config.include
-        if len(interface_config.exclude) > 0:
-            for iface in interface_config.exclude:
-                ifs.remove(iface)
+        ip_addresses = StaticUPnP_Settings.ip_addresses
+        if len(ip_addresses) > 0:
+            import netifaces
+            ifs = netifaces.interfaces()
+            if len(interface_config.include) > 0:
+                ifs = interface_config.include
+            if len(interface_config.exclude) > 0:
+                for iface in interface_config.exclude:
+                    ifs.remove(iface)
 
-        for i in ifs:
-            addrs = netifaces.ifaddresses(i)
-            if netifaces.AF_INET in addrs:
-                for addr in addrs[netifaces.AF_INET]:
-                    self.logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
-                    mreq=socket.inet_aton(self.address)+socket.inet_aton(addr['addr'])
-                    self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+            for i in ifs:
+                addrs = netifaces.ifaddresses(i)
+                if netifaces.AF_INET in addrs:
+                    for addr in addrs[netifaces.AF_INET]:
+                        ip_addresses.append(addr['addr'])
+                        self.logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
+
+        for ip in ip_addresses:
+            mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
+            self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
 
         self.sock.bind(('', self.port))
