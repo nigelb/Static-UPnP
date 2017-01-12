@@ -7,7 +7,11 @@ This can be usefull to make devices available on other subnets, or to make devic
 ```
 git clone https://github.com/nigelb/Static-UPnP.git
 cd Static-UPnP
-python setup.py install
+pip install .
+````
+Or if you want static_upnp to automatically get IP addresses from your network interfaces:
+```
+pip install .[interfaces]
 ```
 
 # Examples
@@ -19,4 +23,14 @@ This demonstration assumes that the Chromecast's IP address is able to be determ
 ```
 cd Static-UPnP
 static_upnp --config-dir examples/Chromecast
+```
+If the Chromecast's IP address cannot be resolved you can set it by changing [examples/Chromecast/StaticUPnP_StaticServices.py](/nigelb/Static-UPnP/blob/master/examples/Chromecast/StaticUPnP_StaticServices.py#L61) line 61. For example if the Chromecast's IP address is 10.0.0.20 then change line 61 from:
+
+```python
+"ip": socket.gethostbyname_ex("Chromecast")[2][0],
+```
+to:
+
+```python
+"ip": "10.0.0.20",
 ```
