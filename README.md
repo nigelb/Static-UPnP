@@ -9,7 +9,7 @@ git clone https://github.com/nigelb/Static-UPnP.git
 cd Static-UPnP
 pip install .
 ````
-Or if you want static_upnp to automatically get IP addresses from your network interfaces:
+Or if you want static_upnp to automatically get the IP addresses to bind to from your network interfaces:
 ```
 pip install .[interfaces]
 ```
