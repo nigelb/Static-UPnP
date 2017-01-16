@@ -20,7 +20,7 @@ import logging.handlers
 import os
 import sys
 import signal
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from static_upnp.upnp_reciever import UPnPServiceResponder
 
@@ -51,11 +51,9 @@ def main():
         return
 
     #Setup up the logging
-    FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s'
-    # FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s File "%(pathname)s", line %(lineno)d, in %(funcName)s - %(message)s'
-
-    file_log = logging.handlers.RotatingFileHandler("/var/log/static_upnp.log", maxBytes=10*1024*1024, backupCount=5)
-    logging.basicConfig(format=FORMAT,level=logging.DEBUG, handlers=[logging.StreamHandler(), file_log])
+    logging_config = Namespace(**StaticUPnP_Settings.logging)
+    file_log = logging.handlers.RotatingFileHandler(logging_config.log_file, maxBytes=logging_config.maxBytes, backupCount=logging_config.backupCount)
+    logging.basicConfig(format=logging_config.FORMAT,level=logging_config.level, handlers=[logging.StreamHandler(), file_log])
 
     logger = logging.getLogger("Main")
     upnp = UPnPServiceResponder(

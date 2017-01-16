@@ -15,10 +15,21 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import logging
+
 permissions = {
     'drop_permissions': True,
     'user': "nobody",
     'group': "nobody"
+}
+
+# Logging Configuration
+logging = {
+    'level': logging.DEBUG,
+    'format': '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s',
+    'log_file': "/var/log/static_upnp.log",
+    'maxBytes': 1024*1024*10,
+    'backupCount': 5
 }
 
 # By default all interfaces that have an AF_INET address will be registered with the multicast group.
@@ -33,3 +44,5 @@ interfaces = {
     # "exclude": ["eth1"]
     "exclude": []
 }
+
+
