@@ -63,15 +63,6 @@ def parse_search_request(request):
 request_handlers = [parse_search_request]
 
 
-def parse_request(request):
-    for request_handler in request_handlers:
-        result = request_handler(request)
-        if result is not None:
-            return result
-    # print request
-    return None
-
-
 class UPnPServiceResponder:
     logger = logging.getLogger("UPnPServiceResponder")
 
@@ -170,10 +161,21 @@ class UPnPServiceResponder:
         self.sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
+    def parse_request(self, request):
+        try:
+            for request_handler in request_handlers:
+                result = request_handler(request)
+                if result is not None:
+                    return result
+            return None
+        except object as e:
+            self.logger.error("Error parsing: \r\n%s"%request)
+            self.logger.error(e)
+
     def run(self):
         while self.running.value:
             try:
-                request = parse_request(self.queue.get(block=False))
+                request = self.parse_request(self.queue.get(block=False))
                 if request is None:
                     continue
                 if request.METHOD == b"M-SEARCH": self.respond_ok(request)
