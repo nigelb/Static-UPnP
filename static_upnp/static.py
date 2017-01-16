@@ -16,6 +16,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import logging
+import logging.handlers
 import os
 import sys
 import signal
@@ -53,8 +54,9 @@ def main():
     FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s'
     # FORMAT = '%(asctime)-15s %(levelname)-7s %(name)s File "%(pathname)s", line %(lineno)d, in %(funcName)s - %(message)s'
 
+    file_log = logging.handlers.RotatingFileHandler("/var/log/static_upnp.log", maxBytes=10*1024*1024, backupCount=5)
+    logging.basicConfig(format=FORMAT,level=logging.DEBUG, handlers=[logging.StreamHandler(), file_log])
 
-    logging.basicConfig(format=FORMAT,level=logging.DEBUG)
     logger = logging.getLogger("Main")
     upnp = UPnPServiceResponder(
             services=StaticUPnP_StaticServices.services,
