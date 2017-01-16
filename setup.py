@@ -26,7 +26,7 @@ setup(name='static_upnp',
       packages=find_packages(),
       zip_safe=False,
       install_requires=["pyip", "schedule", "future"],
-      extras_require=["netifaces"],
+      extras_require={"interfaces":"netifaces"},
       entry_points={
           "console_scripts": [
               "static_upnp = static_upnp.static:main",
