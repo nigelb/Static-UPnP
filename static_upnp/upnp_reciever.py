@@ -99,6 +99,7 @@ class UPnPServiceResponder:
     def setup_sockets(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
 
@@ -213,6 +214,7 @@ class UPnPServiceResponder:
                         if fmt['st'].encode("ascii") != request_type:
                             continue
                     response_data = service_descriptor.OK.format(**fmt).replace("\n", "\r\n").encode("ascii")
+                    self.logger.info("Sending data to: %s:%i"%request.REMOTE)
                     self.send(service_descriptor, response_data, request.REMOTE)
 
                     found = True
