@@ -168,9 +168,10 @@ class UPnPServiceResponder:
                 if result is not None:
                     return result
             return None
-        except object as e:
+        except Exception as e:
             self.logger.error("Error parsing: \r\n%s"%request)
             self.logger.error(e)
+        return None
 
     def run(self):
         while self.running.value:
