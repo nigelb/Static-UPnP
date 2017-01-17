@@ -28,7 +28,9 @@ logging = {
     'format': '%(asctime)-15s %(levelname)-7s %(name)s %(filename)s:%(funcName)s:%(lineno)d - %(message)s',
     'log_file': "/var/log/static_upnp.log",
     'maxBytes': 10*1024*1024,
-    'backupCount': 5
+    'backupCount': 5,
+    'enableFileLog': True,
+    'enableSTDERRLog': True
 }
 
 # By default all interfaces that have an AF_INET address will be registered with the multicast group.
