@@ -53,8 +53,8 @@ def main():
     #Setup up the logging
     logging_config = Namespace(**StaticUPnP_Settings.logging)
     handlers = []
-    file_log = logging.handlers.RotatingFileHandler(logging_config.log_file, maxBytes=logging_config.maxBytes, backupCount=logging_config.backupCount)
     if logging_config.enableFileLog:
+        file_log = logging.handlers.RotatingFileHandler(logging_config.log_file, maxBytes=logging_config.maxBytes, backupCount=logging_config.backupCount)
         handlers.append(file_log)
     if logging_config.enableSTDERRLog:
         handlers.append(logging.StreamHandler())
