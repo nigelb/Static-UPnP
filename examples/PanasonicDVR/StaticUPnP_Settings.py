@@ -16,6 +16,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 import logging
 
+#If static_upnp has been started as root and drop_permissions is set to True, then
+#static_upnp will change its running permissions to be user and group.
 permissions = {
     'drop_permissions': True,
     'user': "nobody",
