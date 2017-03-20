@@ -38,6 +38,7 @@ class AttributeDict(dict):
 
 
 def parse_search_request(request):
+    logger = logging.getLogger("SearchRequestParser")
     data, sender = request
     if not (data.startswith(b"M-SEARCH") or data.startswith(b"NOTIFY")):
         return None
@@ -54,9 +55,15 @@ def parse_search_request(request):
     )
     for line in headers.split(b"\n"):
         line = line.strip()
+        while line.endswith(b"\x00"):
+            line = line[:-1]
         if len(line) > 0:
-            header, value = line.split(b":", 1)
-            result.HEADERS[header].append(value.strip())
+            try:
+                header, value = line.split(b":", 1)
+                result.HEADERS[header].append(value.strip())
+            except ValueError as e:
+                logger.error("Error Splitting header: %s"%line.__repr__(), e)
+
     return result
 
 
@@ -169,8 +176,9 @@ class UPnPServiceResponder:
                     return result
             return None
         except Exception as e:
-            self.logger.error("Error parsing: \r\n%s"%request)
-            self.logger.error(e)
+            self.logger.error("Error:", e)
+            self.logger.error("Error parsing: \r\n%s"%request.__repr__())
+
         return None
 
     def run(self):
