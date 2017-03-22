@@ -17,8 +17,8 @@
 
 import StaticUPnP_StaticServices
 
-from mDNS import mDNSResponder
-from upnp_reciever import UPnPServiceResponder
+from static_upnp.mDNS import mDNSResponder
+from static_upnp.upnp_reciever import UPnPServiceResponder
 
 responders=[
     UPnPServiceResponder(services=StaticUPnP_StaticServices.services),
