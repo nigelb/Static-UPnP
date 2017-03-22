@@ -62,16 +62,28 @@ def main():
     logging.basicConfig(format=logging_config.format,level=logging_config.level, handlers=handlers)
 
     logger = logging.getLogger("Main")
-    upnp = UPnPServiceResponder(
-            services=StaticUPnP_StaticServices.services,
-    )
+    import StaticUPnP_Responders
+    # upnp = UPnPServiceResponder(
+    #         services=StaticUPnP_StaticServices.services,
+    # )
+
 
     def signal_handler(signal, frame):
-        upnp.shutdown()
+        # upnp.shutdown()
+        print(len(StaticUPnP_Responders.responders))
+        for responder in StaticUPnP_Responders.responders:
+            print(responder)
+            responder.shutdown()
+
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    upnp.run()
+    # upnp.run()
+    processes = []
+    for responder in StaticUPnP_Responders.responders:
+        responder.start()
 
+    # while True:
+    #     time.sleep(1)
 if __name__ == "__main__":
     main()

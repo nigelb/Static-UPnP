@@ -80,6 +80,8 @@ class UPnPServiceResponder:
         self.buffer_size = buffer_size
         self.services = services
 
+
+    def start(self):
         self.setup_sockets()
         import StaticUPnP_Settings
         permissions = Namespace(**StaticUPnP_Settings.permissions)

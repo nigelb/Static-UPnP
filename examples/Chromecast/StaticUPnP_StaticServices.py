@@ -14,15 +14,16 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-from datetime import datetime, timedelta
-import time
+
 import socket
 
+from dnslib import DNSQuestion, QTYPE
+
+from chromecast_helpers import get_chromecast_uuid, get_date, get_chromecast_mdns_response, get_service_descriptor, \
+    get_chromecast_friendly_name
+from mDNS import StaticMDNDService
 from static_upnp.static import StaticService
 
-def get_date():
-    ts=datetime.now()+timedelta(seconds=time.timezone)
-    return ts.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
 OK = """HTTP/1.1 200 OK
 CACHE-CONTROL: max-age={max_age}
@@ -56,11 +57,19 @@ USN: {uuid}
 
 """
 
+chromecast_ip = socket.gethostbyname_ex("Chromecast")[2][0]
+chromecast_port = 8008
+
+# "uuid": "02582d8a-4a1a-51bb-df1d-f72ba822a4df",
+chromecast_service_descriptor = get_service_descriptor(chromecast_ip, chromecast_port)
+chromecast_uuid = get_chromecast_uuid(chromecast_service_descriptor)
+chromecast_friendly_name = get_chromecast_friendly_name(chromecast_service_descriptor)
+
 services = [
     StaticService({
-        "ip": socket.gethostbyname_ex("Chromecast")[2][0],
-        "port": 8008,
-        "uuid": "02582d8a-4a1a-51bb-df1d-f72ba822a4df",
+        "ip": chromecast_ip,
+        "port": chromecast_port,
+        "uuid": chromecast_uuid,
         "max_age": "1800",
         "date": get_date
     },  1024,
@@ -85,3 +94,8 @@ services = [
             },
         ])
 ]
+
+mdns_services=[StaticMDNDService(
+    response_generator=lambda query: get_chromecast_mdns_response(query, chromecast_ip, chromecast_uuid, chromecast_friendly_name),
+    dns_question=DNSQuestion(qname="_googlecast._tcp.local", qtype=QTYPE.PTR, qclass=32769)
+)]

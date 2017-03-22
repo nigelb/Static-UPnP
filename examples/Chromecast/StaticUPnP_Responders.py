@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # static_upnp responds to upnp search requests with statically configures responses.
 # Copyright (C) 2016  NigelB
 #
@@ -16,20 +15,12 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from setuptools import setup, find_packages
+import StaticUPnP_StaticServices
 
-setup(name='static_upnp',
-      version='0.0.1',
-      description='static_upnp responds to upnp search requests with statically configures responses.',
-      author='NigelB',
-      author_email='nigel.blair@gmail.com',
-      packages=find_packages(),
-      zip_safe=False,
-      install_requires=["pyip", "schedule", "dnslib", "requests"],
-      extras_require={"interfaces":"netifaces"},
-      entry_points={
-          "console_scripts": [
-              "static_upnp = static_upnp.static:main",
-          ]
-      },
-)
+from mDNS import mDNSResponder
+from upnp_reciever import UPnPServiceResponder
+
+responders=[
+    UPnPServiceResponder(services=StaticUPnP_StaticServices.services),
+    mDNSResponder(services=StaticUPnP_StaticServices.mdns_services)
+]
