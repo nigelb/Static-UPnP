@@ -19,9 +19,9 @@ import socket
 
 from dnslib import DNSQuestion, QTYPE
 
-from chromecast_helpers import get_chromecast_uuid, get_date, get_chromecast_mdns_response, get_service_descriptor, \
-    get_chromecast_friendly_name
-from mDNS import StaticMDNDService
+from static_upnp.chromecast_helpers import get_chromecast_uuid, get_date, get_chromecast_mdns_response
+from static_upnp.chromecast_helpers import get_service_descriptor, get_chromecast_friendly_name
+from static_upnp.mDNS import StaticMDNDService
 from static_upnp.static import StaticService
 
 
