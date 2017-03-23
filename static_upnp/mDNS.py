@@ -133,3 +133,6 @@ class mDNSResponder:
                     msg = sr.response_generator(msg)
                     self.logger.debug(msg)
                     self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
+                    self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
+                    self.sock.sendto(sr.response_generator(msg), record[1])
+                    self.sock.sendto(sr.response_generator(msg), record[1])
