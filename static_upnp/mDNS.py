@@ -89,11 +89,10 @@ class mDNSResponder:
                     request = dns.DNSRecord.parse(record[0])
                     self.handle_request(record, request)
 
-
             except queue.Empty as error:
                 time.sleep(0.1)
             except Exception as error:
-                self.logger.error("Error", error)
+                self.logger.exception()
         # self.reciever_thread.join()
 
     def socket_handler(self, queue, running):

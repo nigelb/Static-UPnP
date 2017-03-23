@@ -45,12 +45,7 @@ def drop_privileges(self, uid_name, gid_name):
     old_umask = os.umask(0o077)
     self.logger.info("Changed permissions to: %s: %i, %s, %i"%(uid_name, running_uid, gid_name, running_gid))
 
-def setup_sockets(self):
-    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-
-
+def get_interface_addresses(logger):
     import StaticUPnP_Settings
     interface_config = Namespace(**StaticUPnP_Settings.interfaces)
     ip_addresses = StaticUPnP_Settings.ip_addresses
@@ -68,7 +63,15 @@ def setup_sockets(self):
             if netifaces.AF_INET in addrs:
                 for addr in addrs[netifaces.AF_INET]:
                     ip_addresses.append(addr['addr'])
-                    self.logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
+                    logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
+    return ip_addresses
+
+def setup_sockets(self):
+    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+
+    ip_addresses = get_interface_addresses(self.logger)
 
     for ip in ip_addresses:
         self.logger.info("Regestering multicast for: %s: %s"%(self.address, ip))
