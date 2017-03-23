@@ -24,10 +24,12 @@ import queue
 import time
 
 import os
+import select
 
-from upnp_reciever import UPnPServiceResponder, register_worker_signal_handler
+from static_upnp.upnp_reciever import register_worker_signal_handler
 
 from static_upnp.util import drop_privileges, setup_sockets
+import socket
 
 
 class StaticMDNDService:
@@ -87,6 +89,7 @@ class mDNSResponder:
                 time.sleep(0.1)
             except Exception as error:
                 self.logger.error("Error", error)
+        # self.reciever_thread.join()
 
     def socket_handler(self, queue, running):
         self.logger = logging.getLogger("mDNSResponder.schedule_handler")
@@ -95,18 +98,21 @@ class mDNSResponder:
         sock = self.sock
         while running.value:
             try:
-                rec = sock.recvfrom(self.buffer_size)
-                self.logger.debug(rec)
-                queue.put(rec)
+                ready = select.select([sock], [], [], 10)
+                if ready:
+                    rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
+                    self.logger.debug(rec)
+                    queue.put(rec)
+            except socket.error as se:
+                pass
             except Exception as e:
-                self.logger.error(e)
+                self.logger.exception("Message")
 
         self.sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
     def shutdown(self):
         self.running.value = 0
-        self.reciever_thread.join()
 
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")

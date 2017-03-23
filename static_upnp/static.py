@@ -82,12 +82,14 @@ def main():
             responder.shutdown()
 
 
-    signal.signal(signal.SIGINT, signal_handler)
+
 
     # upnp.run()
     processes = []
     for responder in StaticUPnP_Responders.responders:
         responder.start()
+
+    signal.signal(signal.SIGINT, signal_handler)
 
     # while True:
     #     time.sleep(1)

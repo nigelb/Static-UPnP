@@ -28,6 +28,7 @@ from multiprocessing import Queue, Process, Value
 
 import os
 import schedule
+import select
 from collections import defaultdict
 
 from static_upnp.util import drop_privileges, setup_sockets
@@ -130,9 +131,13 @@ class UPnPServiceResponder:
         sock = self.sock
         while running.value:
             try:
-                rec = sock.recvfrom(self.buffer_size)
-                self.logger.debug(rec)
-                queue.put(rec)
+                ready = select.select([sock], [], [], 10)
+                if ready:
+                    rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
+                    self.logger.debug(rec)
+                    queue.put(rec)
+            except socket.error as se:
+                pass
             except Exception as e:
                 self.logger.error(e)
 
@@ -164,6 +169,8 @@ class UPnPServiceResponder:
                 time.sleep(0.1)
 
         self.sock.close()
+        # self.schedule_thread.join()
+        # self.reciever_thread.join()
 
     def respond_ok(self, request):
         if self.services is not None:
@@ -210,8 +217,6 @@ class UPnPServiceResponder:
 
     def shutdown(self):
         self.running.value = 0
-        self.schedule_thread.join()
-        self.reciever_thread.join()
 
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")
