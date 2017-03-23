@@ -119,7 +119,7 @@ class mDNSResponder:
 
     def handle_request(self, record, msg):
         from dnslib import dns
-        self.logger.debug(msg.get_q().qname)
+        self.logger.debug([x.qname for x in msg.questions])
         if dns.OPCODE.get(msg.header.get_opcode()) == 'QUERY':
             for sr in self.services:
                 if sr.matches(msg):
