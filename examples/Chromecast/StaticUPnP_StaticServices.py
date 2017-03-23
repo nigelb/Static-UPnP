@@ -57,13 +57,16 @@ USN: {uuid}
 
 """
 
-chromecast_ip = socket.gethostbyname_ex("Chromecast")[2][0]
+chromecast_ip = "127.0.0.1"
 chromecast_port = 8008
 
 # "uuid": "02582d8a-4a1a-51bb-df1d-f72ba822a4df",
-chromecast_service_descriptor = get_service_descriptor(chromecast_ip, chromecast_port)
-chromecast_uuid = get_chromecast_uuid(chromecast_service_descriptor)
-chromecast_friendly_name = get_chromecast_friendly_name(chromecast_service_descriptor)
+# chromecast_service_descriptor = get_service_descriptor(chromecast_ip, chromecast_port)
+# chromecast_uuid = get_chromecast_uuid(chromecast_service_descriptor)
+# chromecast_friendly_name = get_chromecast_friendly_name(chromecast_service_descriptor)
+
+chromecast_uuid = "02582d8a-4a1a-51bb-df1d-f72ba822a4df"
+chromecast_friendly_name = "Testing"
 
 services = [
     StaticService({

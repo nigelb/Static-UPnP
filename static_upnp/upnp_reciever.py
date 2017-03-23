@@ -30,6 +30,7 @@ import os
 import schedule
 from collections import defaultdict
 
+from static_upnp.util import drop_privileges, setup_sockets
 
 
 class AttributeDict(dict):
@@ -97,38 +98,7 @@ class UPnPServiceResponder:
         self.schedule_thread.start()
 
     def setup_sockets(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-
-
-        import StaticUPnP_Settings
-        interface_config = Namespace(**StaticUPnP_Settings.interfaces)
-        ip_addresses = StaticUPnP_Settings.ip_addresses
-        if len(ip_addresses) == 0:
-            import netifaces
-            ifs = netifaces.interfaces()
-            if len(interface_config.include) > 0:
-                ifs = interface_config.include
-            if len(interface_config.exclude) > 0:
-                for iface in interface_config.exclude:
-                    ifs.remove(iface)
-
-            for i in ifs:
-                addrs = netifaces.ifaddresses(i)
-                if netifaces.AF_INET in addrs:
-                    for addr in addrs[netifaces.AF_INET]:
-                        ip_addresses.append(addr['addr'])
-                        self.logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
-
-        for ip in ip_addresses:
-            self.logger.info("Regestering multicast for: %s"%(ip))
-            mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
-            self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-
-
-        self.sock.bind(('', self.port))
+        return setup_sockets(self)
 
 
     def schedule_handler(self, running):
@@ -247,26 +217,7 @@ class UPnPServiceResponder:
         self.logger.info("---------------------------")
 
     def drop_privileges(self, uid_name, gid_name):
-        if os.getuid() != 0:
-            # We're not root so, like, whatever dude
-            self.logger.info("Not running as root. Cannot drop permissions.")
-            return
-
-        # Get the uid/gid from the name
-        running_uid = pwd.getpwnam(uid_name).pw_uid
-        running_gid = grp.getgrnam(gid_name).gr_gid
-
-        # Remove group privileges
-        os.setgroups([])
-
-        # Try setting the new uid/gid
-        os.setgid(running_gid)
-        os.setuid(running_uid)
-
-        # Ensure a very conservative umask
-        old_umask = os.umask(0o077)
-        self.logger.info("Changed permissions to: %s: %i, %s, %i"%(uid_name, running_uid, gid_name, running_gid))
-
+        return drop_privileges(self, uid_name, gid_name)
 
 class SpoofingUPnPServiceResponder(UPnPServiceResponder):
     def __init__(self, address='239.255.255.250', port=1900, buffer_size=4096, services=None, user="nobody",

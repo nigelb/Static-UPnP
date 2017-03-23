@@ -27,6 +27,9 @@ import os
 
 from upnp_reciever import UPnPServiceResponder, register_worker_signal_handler
 
+from static_upnp.util import drop_privileges, setup_sockets
+
+
 class StaticMDNDService:
     def __init__(self, query_matcher=None, response_generator=None, dns_question=None):
         self.query_matcher = query_matcher
@@ -42,13 +45,18 @@ class StaticMDNDService:
 
 class mDNSResponder:
     logger = logging.getLogger("mDNSResponder")
-    setup_sockets = UPnPServiceResponder.setup_sockets
-    drop_privileges = UPnPServiceResponder.drop_privileges
+
     def __init__(self, address='224.0.0.251', port=5353, buffer_size=4096, services=None):
         self.address = address
         self.port = port
         self.buffer_size = buffer_size
         self.services = services
+
+    def drop_privileges(self, uid_name, gid_name):
+        return drop_privileges(self, uid_name, gid_name)
+
+    def setup_sockets(self):
+        return setup_sockets(self)
 
     def start(self):
         import StaticUPnP_Settings

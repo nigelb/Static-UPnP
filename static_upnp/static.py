@@ -37,6 +37,7 @@ class StaticService:
 def main():
     argParse = ArgumentParser(description="static_upnp will announce and respond to upnp search requests for the statically configured devices.")
     argParse.add_argument("--config-dir",metavar="<config_dir>", dest="config_dir", action="store", help="The location of the config directory.")
+    argParse.add_argument("-v",  dest="import_verbose", action="store_const", default=False, const=True, help="Display the configuration import errors.")
     args = argParse.parse_args()
 
     try:
@@ -46,6 +47,11 @@ def main():
         import StaticUPnP_Settings
 
     except (AttributeError, ImportError) as e:
+        if args.import_verbose:
+            import traceback
+            traceback.print_exc(file=sys.stdout)
+            print("")
+            print("")
         print ("Could not find configuration in %s, specify with --config-dir option."%(args.config_dir))
         argParse.print_help()
         return
