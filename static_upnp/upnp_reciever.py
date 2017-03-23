@@ -97,6 +97,8 @@ class UPnPServiceResponder:
         self.reciever_thread.start()
         self.schedule_thread = Process(target=self.schedule_handler, args=(self.running,))
         self.schedule_thread.start()
+        self.response_thread = Process(target=self.response_handler, args=(self.queue, self.running))
+        self.response_thread.start()
 
     def setup_sockets(self):
         return setup_sockets(self)
@@ -158,17 +160,17 @@ class UPnPServiceResponder:
 
         return None
 
-    def run(self):
-        while self.running.value:
+    def response_handler(self, _queue, running):
+        self.logger.info("PID: %s"%os.getpid())
+        while running.value:
             try:
-                request = self.parse_request(self.queue.get(block=False))
+                request = self.parse_request(_queue.get(block=False))
                 if request is None:
                     continue
                 if request.METHOD == b"M-SEARCH": self.respond_ok(request)
             except queue.Empty as error:
                 time.sleep(0.1)
 
-        self.sock.close()
         # self.schedule_thread.join()
         # self.reciever_thread.join()
 
@@ -217,6 +219,7 @@ class UPnPServiceResponder:
 
     def shutdown(self):
         self.running.value = 0
+        self.sock.close()
 
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")
