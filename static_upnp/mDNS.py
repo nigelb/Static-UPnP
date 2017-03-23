@@ -35,6 +35,7 @@ import socket
 
 
 class StaticMDNDService:
+    logger = logging.getLogger("StaticMDNDService")
     def __init__(self, query_matcher=None, response_generator=None, dns_question=None):
         self.query_matcher = query_matcher
         self.response_generator = response_generator
@@ -44,7 +45,9 @@ class StaticMDNDService:
         if self.query_matcher is not None:
             return self.query_matcher(query)
         for question in query.questions:
-            return (question.qname == self.dns_question.qname)
+            if question.qname == self.dns_question.qname:
+                return True
+        return False
 
 
 class mDNSResponder:
