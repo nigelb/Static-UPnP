@@ -26,6 +26,8 @@ import time
 import os
 import select
 
+from dnslib import OPCODE
+
 from static_upnp.upnp_reciever import register_worker_signal_handler
 
 from static_upnp.util import drop_privileges, setup_sockets
@@ -119,7 +121,7 @@ class mDNSResponder:
 
     def handle_request(self, record, msg):
         from dnslib import dns
-        self.logger.debug([x.qname for x in msg.questions])
+        self.logger.debug("%s: %s",OPCODE.get(msg.header.get_opcode(), [x.qname.__str__() for x in msg.questions]))
         if dns.OPCODE.get(msg.header.get_opcode()) == 'QUERY':
             for sr in self.services:
                 if sr.matches(msg):
