@@ -92,7 +92,7 @@ class mDNSResponder:
             except queue.Empty as error:
                 time.sleep(0.1)
             except Exception as error:
-                self.logger.exception()
+                self.logger.exception("Error")
         # self.reciever_thread.join()
 
     def socket_handler(self, queue, running):
