@@ -101,7 +101,7 @@ class mDNSResponder:
                 ready = select.select([sock], [], [], 10)
                 if ready:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
-                    self.logger.debug(rec)
+                    self.logger.log(0, rec)
                     queue.put(rec)
             except socket.error as se:
                 pass
@@ -119,11 +119,10 @@ class mDNSResponder:
 
     def handle_request(self, record, msg):
         from dnslib import dns
-        self.logger.debug(msg)
-        self.logger.debug(msg.header.get_opcode())
+        self.logger.debug(msg.get_q().qname)
         if dns.OPCODE.get(msg.header.get_opcode()) == 'QUERY':
             for sr in self.services:
                 if sr.matches(msg):
-                    print (record[1])
-                    self.sock.sendto(sr.response_generator(msg), record[1])
-                    # self.sock.sendto(sr.response_generator(msg), ("224.0.0.251", 5353))
+                    self.logger.debug(msg)
+                    # self.sock.sendto(sr.response_generator(msg), record[1])
+                    self.sock.sendto(sr.response_generator(msg), ("224.0.0.251", 5353))
