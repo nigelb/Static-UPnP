@@ -52,7 +52,7 @@ def get_chromecast_mdns_response(query_data, chromecast_ip, chromecast_uuid, fri
     ans.add_ar(RR(long_mdns_name, QTYPE.TXT, rdata=TXT(["id=%s"%collapsed_uuid, "rm=", "ve=05", "md=Chromecast", "ic=/setup/icon.png", "fn=%s"%friendly_name, "ca=4101", "st=0", "bs=FA8FCA630F87", "rs="]), ttl=4500, rclass=32769))
     ans.add_ar(RR(long_mdns_name, QTYPE.SRV, rdata=SRV(0, 0, 8009, "%s.local"%chromecast_uuid), rclass=32769,ttl=120))
     ans.add_ar(RR("%s.local"%chromecast_uuid, QTYPE.A, rdata=A(chromecast_ip),rclass=32769,ttl=120))
-    return ans.pack()
+    return ans
 
 
 def get_date():
