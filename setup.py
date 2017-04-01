@@ -25,7 +25,7 @@ setup(name='static_upnp',
       author_email='nigel.blair@gmail.com',
       packages=find_packages(),
       zip_safe=False,
-      install_requires=["pyip", "schedule", "dnslib", "requests"],
+      install_requires=["pyip", "schedule", "dnslib==0.9.7", "requests"],
       extras_require={"interfaces":"netifaces"},
       entry_points={
           "console_scripts": [
