@@ -24,7 +24,7 @@ This demonstration assumes that the Chromecast's IP address is able to be determ
 cd Static-UPnP
 static_upnp --config-dir examples/Chromecast
 ```
-If the Chromecast's IP address cannot be resolved you can set it by changing [examples/Chromecast/StaticUPnP_StaticServices.py](/nigelb/Static-UPnP/blob/master/examples/Chromecast/StaticUPnP_StaticServices.py#L60) line 60. For example if the Chromecast's IP address is 10.0.0.20 then change line 61 from:
+If the Chromecast's IP address cannot be resolved you can set it by changing [examples/Chromecast/StaticUPnP_StaticServices.py](/nigelb/Static-UPnP/blob/master/examples/Chromecast/StaticUPnP_StaticServices.py#L60) line 60. For example if the Chromecast's IP address is 10.0.0.20 then change line 60 from:
 
 ```python
 chromecast_ip = socket.gethostbyname_ex("Chromecast")[2][0]
