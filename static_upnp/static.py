@@ -14,13 +14,17 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
+import ctypes
 import logging
 import logging.handlers
 import os
 import sys
 import signal
 from argparse import ArgumentParser, Namespace
+
+import time
+
+from multiprocessing import Value
 
 from static_upnp.upnp_reciever import UPnPServiceResponder
 
@@ -74,12 +78,15 @@ def main():
     # )
 
 
+    running = Value(ctypes.c_int, 1)
+
     def signal_handler(signal, frame):
         # upnp.shutdown()
-        print(len(StaticUPnP_Responders.responders))
-        for responder in StaticUPnP_Responders.responders:
-            print(responder)
-            responder.shutdown()
+        # print(len(StaticUPnP_Responders.responders))
+        # for responder in StaticUPnP_Responders.responders:
+        #     print(responder)
+        #     responder.shutdown()
+        running.value = 0
 
 
 
@@ -91,7 +98,18 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    # while True:
-    #     time.sleep(1)
+    while running.value == 1:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt as e:
+            print ("KeyboardInterrupt")
+
+    for responder in StaticUPnP_Responders.responders:
+        responder.shutdown()
+
+    for responder in StaticUPnP_Responders.responders:
+        responder.join()
+
+
 if __name__ == "__main__":
     main()

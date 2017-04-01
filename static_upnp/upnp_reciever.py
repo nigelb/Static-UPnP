@@ -169,10 +169,10 @@ class UPnPServiceResponder:
                     continue
                 if request.METHOD == b"M-SEARCH": self.respond_ok(request)
             except queue.Empty as error:
-                time.sleep(0.1)
-
-        # self.schedule_thread.join()
-        # self.reciever_thread.join()
+                try:
+                    time.sleep(0.1)
+                except KeyboardInterrupt as ki:
+                    time.sleep(1)
 
     def respond_ok(self, request):
         if self.services is not None:
@@ -223,6 +223,11 @@ class UPnPServiceResponder:
 
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")
+
+    def join(self):
+        self.schedule_thread.join()
+        self.reciever_thread.join()
+        self.response_thread.join()
 
     def drop_privileges(self, uid_name, gid_name):
         return drop_privileges(self, uid_name, gid_name)

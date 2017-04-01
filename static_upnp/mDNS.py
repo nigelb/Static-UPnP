@@ -77,8 +77,8 @@ class mDNSResponder:
         self.queue = Queue()
         self.reciever_thread = Process(target=self.socket_handler, args=(self.queue, self.running))
         self.reciever_thread.start()
-        self.runner = Process(target=self.run, args=(self.queue, self.running))
-        self.runner.start()
+        self.runner_thread = Process(target=self.run, args=(self.queue, self.running))
+        self.runner_thread.start()
 
     def run(self, _queue, running):
         from dnslib import dns
@@ -90,7 +90,12 @@ class mDNSResponder:
                     self.handle_request(record, request)
 
             except queue.Empty as error:
-                time.sleep(0.1)
+                try:
+                    time.sleep(0.1)
+                except KeyboardInterrupt as ki:
+                    print("KeyboardInterrupt")
+                    print(running.value)
+                    time.sleep(1)
             except Exception as error:
                 self.logger.exception("Error")
         # self.reciever_thread.join()
@@ -111,6 +116,8 @@ class mDNSResponder:
                 pass
             except Exception as e:
                 self.logger.exception("Message")
+            except KeyboardInterrupt as ki:
+                time.sleep(1)
 
         self.sock.close()
         self.logger.warn("Socket Handler shutting down...")
@@ -121,6 +128,10 @@ class mDNSResponder:
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")
 
+    def join(self):
+        self.reciever_thread.join()
+        self.runner_thread.join()
+
     def handle_request(self, record, msg):
         from dnslib import dns
         self.logger.debug("%s: %s, from: %s", OPCODE.get(msg.header.get_opcode()), [x.qname.__str__() for x in msg.questions], record[1])
@@ -128,11 +139,8 @@ class mDNSResponder:
             for sr in self.services:
                 if sr.matches(msg):
                     self.logger.debug(msg)
-                    # self.sock.sendto(sr.response_generator(msg), record[1])
                     msg = sr.response_generator(msg)
                     self.logger.debug(msg)
                     self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
                     self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
                     self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
-                    # self.sock.sendto(msg.pack(), record[1])
-                    # self.sock.sendto(msg.pack(), record[1])
