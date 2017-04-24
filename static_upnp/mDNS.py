@@ -19,7 +19,10 @@ from argparse import Namespace
 from multiprocessing import Queue, Process, Value
 
 import ctypes
-import queue
+try:
+    import queue
+except:
+    import Queue as queue
 
 import time
 
