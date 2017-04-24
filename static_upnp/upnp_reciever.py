@@ -19,7 +19,10 @@ import ctypes
 import grp
 import logging
 import pwd
-import queue
+try:
+    import queue
+except:
+    import Queue as queue
 import signal
 import socket
 import time
