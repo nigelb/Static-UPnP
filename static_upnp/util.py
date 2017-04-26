@@ -95,7 +95,15 @@ class socket_list:
         return self.sock.recvfrom(*args, **kwargs)
 
     def sendto(self, *args, **kwargs):
-        return self.sock.sendto(*args, **kwargs)
+        base = False
+        if "base" in kwargs:
+            base = True
+            del kwargs["base"]
+        for ip in self.outgoing:
+            self.outgoing[ip].sendto(*args, **kwargs)
+
+        if base:
+            self.sock.sendto(*args, **kwargs)
 
     def close(self):
         self.sock.close()
