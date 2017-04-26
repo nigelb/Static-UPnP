@@ -66,17 +66,41 @@ def get_interface_addresses(logger):
                     logger.info("Regestering multicast on %s: %s"%(i, addr['addr']))
     return ip_addresses
 
+
+class socket_list:
+    def __init__(self, logger, address, port):
+        self.address = address
+        self.port = port
+        self.logger = logger
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+
+        ip_addresses = get_interface_addresses(self.logger)
+        self.outgoing = {}
+        for ip in ip_addresses:
+            self.logger.info("Regestering multicast for: %s: %s"%(self.address, ip))
+            mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
+            self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+            self.outgoing[ip] = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            self.outgoing[ip].setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.outgoing[ip].setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
+            self.outgoing[ip].bind((ip, self.port+1))
+
+
+        self.sock.bind(('', self.port))
+
+    def recvfrom(self, *args, **kwargs):
+        return self.sock.recvfrom(*args, **kwargs)
+
+    def sendto(self, *args, **kwargs):
+        return self.sock.sendto(*args, **kwargs)
+
+    def close(self):
+        self.sock.close()
+        for ip in self.outgoing:
+            self.outgoing[ip].close()
+
 def setup_sockets(self):
-    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-
-    ip_addresses = get_interface_addresses(self.logger)
-
-    for ip in ip_addresses:
-        self.logger.info("Regestering multicast for: %s: %s"%(self.address, ip))
-        mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
-        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-
-
-    self.sock.bind(('', self.port))
+    self.sock = socket_list(self.logger, self.address, self.port)

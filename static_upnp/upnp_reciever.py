@@ -133,7 +133,7 @@ class UPnPServiceResponder:
         self.logger = logging.getLogger("UPnPServiceResponder.schedule_handler")
         self.logger.info("PID: %s"%os.getpid())
         register_worker_signal_handler(self.logger)
-        sock = self.sock
+        sock = self.sock.sock
         while running.value:
             try:
                 ready = select.select([sock], [], [], 10)
