@@ -216,7 +216,7 @@ class UPnPServiceResponder:
                             continue
                     response_data = service_descriptor.OK.format(**fmt).replace("\n", "\r\n").encode("ascii")
                     send_to = (self.address, self.port)
-                    self.logger.info("Sending data to: %s:%i"%send_to.__repr__())
+                    self.logger.info("Sending data to: %s:%i"%send_to)
                     self.send(service_descriptor, response_data, send_to)
 
                     found = True
