@@ -129,7 +129,10 @@ class UPnPServiceResponder:
                 fmt = self.create_fmt(service_descriptor.params, service)
                 fmt['nts'] = nts
                 response_data = service_descriptor.NOTIFY.format(**fmt).replace("\n", "\r\n").encode("ascii")
-                self.sock.sendto(response_data, (self.address, self.port))
+                socks = [self.sockets[x] for x in self.sockets.keys()]
+                for sock in socks:
+                    for i in range(self.delivery_count):
+                        sock.sendto(response_data, (self.address, self.port))
 
     def socket_handler(self, queue, running):
         self.logger = logging.getLogger("UPnPServiceResponder.schedule_handler")
@@ -223,7 +226,8 @@ class UPnPServiceResponder:
     def send(self, service_descriptor, response_data, REQUEST):
         socks = [self.sockets[x] for x in self.sockets.keys()]
         for sock in socks:
-            self.sock.sendto(response_data, REQUEST)
+            for i in range(self.delivery_count):
+                sock.sendto(response_data, REQUEST)
 
     def shutdown(self):
         self.running.value = 0
