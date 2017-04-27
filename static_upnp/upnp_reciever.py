@@ -133,11 +133,11 @@ class UPnPServiceResponder:
         self.logger = logging.getLogger("UPnPServiceResponder.schedule_handler")
         self.logger.info("PID: %s"%os.getpid())
         register_worker_signal_handler(self.logger)
-        sock = self.sock.sock
+        socks = [self.sockets[x] for x in self.sockets.keys()]
         while running.value:
             try:
-                ready = select.select([sock], [], [], 10)
-                if ready:
+                ready = select.select([socks], [], [], 10)
+                for sock in ready:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
                     self.logger.debug(rec)
                     queue.put(rec)
@@ -147,7 +147,8 @@ class UPnPServiceResponder:
                 self.logger.error(e)
 
         self.do_notify(b"ssdp:goodbye")
-        self.sock.close()
+        for sock in socks:
+            sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
     def parse_request(self, request):
@@ -218,11 +219,15 @@ class UPnPServiceResponder:
 
 
     def send(self, service_descriptor, response_data, REQUEST):
-        self.sock.sendto(response_data, REQUEST)
+        socks = [self.sockets[x] for x in self.sockets.keys()]
+        for sock in socks:
+            self.sock.sendto(response_data, REQUEST)
 
     def shutdown(self):
         self.running.value = 0
-        self.sock.close()
+        socks = [self.sockets[x] for x in self.sockets.keys()]
+        for sock in socks:
+            sock.close()
 
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")

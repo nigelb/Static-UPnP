@@ -19,6 +19,7 @@ from argparse import Namespace
 from multiprocessing import Queue, Process, Value
 
 import ctypes
+
 try:
     import queue
 except:
@@ -39,6 +40,7 @@ import socket
 
 class StaticMDNDService:
     logger = logging.getLogger("StaticMDNDService")
+
     def __init__(self, query_matcher=None, response_generator=None, dns_question=None):
         self.query_matcher = query_matcher
         self.response_generator = response_generator
@@ -56,10 +58,12 @@ class StaticMDNDService:
 class mDNSResponder:
     logger = logging.getLogger("mDNSResponder")
 
-    def __init__(self, address='224.0.0.251', port=5353, buffer_size=4096, services=None):
+    def __init__(self, address='224.0.0.251', port=5353, buffer_size=4096, ttl=1, delivery_count=3, services=None):
         self.address = address
         self.port = port
         self.buffer_size = buffer_size
+        self.ttl = ttl
+        self.delivery_count = delivery_count
         self.services = services
 
     def drop_privileges(self, uid_name, gid_name):
@@ -101,17 +105,17 @@ class mDNSResponder:
                     time.sleep(1)
             except Exception as error:
                 self.logger.exception("Error")
-        # self.reciever_thread.join()
+                # self.reciever_thread.join()
 
     def socket_handler(self, queue, running):
         self.logger = logging.getLogger("mDNSResponder.schedule_handler")
-        self.logger.info("PID: %s"%os.getpid())
+        self.logger.info("PID: %s" % os.getpid())
         register_worker_signal_handler(self.logger)
-        sock = self.sock.sock
+        socks = [self.sockets[x] for x in self.sockets.keys()]
         while running.value:
             try:
-                ready = select.select([sock], [], [], 10)
-                if ready:
+                ready = select.select([socks], [], [], 10)
+                for sock in ready:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
                     self.logger.log(0, rec)
                     queue.put(rec)
@@ -122,7 +126,8 @@ class mDNSResponder:
             except KeyboardInterrupt as ki:
                 time.sleep(1)
 
-        self.sock.close()
+        for sock in socks:
+            sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
     def shutdown(self):
@@ -137,13 +142,15 @@ class mDNSResponder:
 
     def handle_request(self, record, msg):
         from dnslib import dns
-        self.logger.debug("%s: %s, from: %s", OPCODE.get(msg.header.get_opcode()), [x.qname.__str__() for x in msg.questions], record[1])
+        self.logger.debug("%s: %s, from: %s", OPCODE.get(msg.header.get_opcode()),
+                          [x.qname.__str__() for x in msg.questions], record[1])
         if dns.OPCODE.get(msg.header.get_opcode()) == 'QUERY':
             for sr in self.services:
                 if sr.matches(msg):
                     self.logger.debug(msg)
                     msg = sr.response_generator(msg)
                     self.logger.debug(msg)
-                    self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
-                    self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
-                    self.sock.sendto(msg.pack(), ("224.0.0.251", 5353))
+                    for ip in self.sockets:
+                        sock = self.sockets[ip]
+                        for i in range(self.delivery_count):
+                            sock.sendto(msg.pack(), ("224.0.0.251", 5353))
