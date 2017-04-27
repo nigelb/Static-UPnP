@@ -141,7 +141,7 @@ class UPnPServiceResponder:
         while running.value:
             try:
                 ready = select.select(self.socks, [], [], 10)
-                for sock in ready:
+                for sock in ready[0]:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
                     self.logger.debug(rec)
                     queue.put(rec)
