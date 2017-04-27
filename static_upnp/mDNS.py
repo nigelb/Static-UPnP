@@ -152,4 +152,4 @@ class mDNSResponder:
                     self.logger.debug(msg)
                     for sock in self.socks:
                         for i in range(self.delivery_count):
-                            sock.sendto(msg.pack(), ("224.0.0.251", 5353))
+                            sock.sendto(msg.pack(), (self.address, self.port))

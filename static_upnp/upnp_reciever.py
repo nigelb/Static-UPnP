@@ -215,8 +215,9 @@ class UPnPServiceResponder:
                         if fmt['st'].encode("ascii") != request_type:
                             continue
                     response_data = service_descriptor.OK.format(**fmt).replace("\n", "\r\n").encode("ascii")
-                    self.logger.info("Sending data to: %s:%i"%request.REMOTE)
-                    self.send(service_descriptor, response_data, request.REMOTE)
+                    send_to = (self.address, self.port)
+                    self.logger.info("Sending data to: %s:%i"%send_to.__repr__())
+                    self.send(service_descriptor, response_data, send_to)
 
                     found = True
         if b'MX' in request: self.logger.debug(request.MX)
