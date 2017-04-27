@@ -81,6 +81,6 @@ def setup_sockets(self):
         mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         self.logger.info("Regestering multicast for: %s: %s"%(self.address, ip))
-        self.sock.bind((ip, self.port))
+        sock.bind((ip, self.port))
 
         self.sockets[ip] = sock
