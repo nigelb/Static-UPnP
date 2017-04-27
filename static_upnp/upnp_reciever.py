@@ -78,11 +78,13 @@ request_handlers = [parse_search_request]
 class UPnPServiceResponder:
     logger = logging.getLogger("UPnPServiceResponder")
 
-    def __init__(self, address='239.255.255.250', port=1900, buffer_size=4096, services=None):
+    def __init__(self, address='239.255.255.250', port=1900, buffer_size=4096, ttl=1, delivery_count=3, services=None):
 
         self.address = address
         self.port = port
         self.buffer_size = buffer_size
+        self.ttl = ttl
+        self.delivery_count = delivery_count
         self.services = services
 
 
