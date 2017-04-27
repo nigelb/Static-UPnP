@@ -129,8 +129,8 @@ class UPnPServiceResponder:
                 fmt = self.create_fmt(service_descriptor.params, service)
                 fmt['nts'] = nts
                 response_data = service_descriptor.NOTIFY.format(**fmt).replace("\n", "\r\n").encode("ascii")
-                socks = [self.sockets[x] for x in self.sockets.keys()]
-                for sock in socks:
+
+                for sock in self.socks:
                     for i in range(self.delivery_count):
                         sock.sendto(response_data, (self.address, self.port))
 
@@ -138,10 +138,9 @@ class UPnPServiceResponder:
         self.logger = logging.getLogger("UPnPServiceResponder.schedule_handler")
         self.logger.info("PID: %s"%os.getpid())
         register_worker_signal_handler(self.logger)
-        socks = [self.sockets[x] for x in self.sockets.keys()]
         while running.value:
             try:
-                ready = select.select(socks, [], [], 10)
+                ready = select.select(self.socks, [], [], 10)
                 for sock in ready:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
                     self.logger.debug(rec)
@@ -152,7 +151,7 @@ class UPnPServiceResponder:
                 self.logger.error(e)
 
         self.do_notify(b"ssdp:goodbye")
-        for sock in socks:
+        for sock in self.socks:
             sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
@@ -224,15 +223,13 @@ class UPnPServiceResponder:
 
 
     def send(self, service_descriptor, response_data, REQUEST):
-        socks = [self.sockets[x] for x in self.sockets.keys()]
-        for sock in socks:
+        for sock in self.socks:
             for i in range(self.delivery_count):
                 sock.sendto(response_data, REQUEST)
 
     def shutdown(self):
         self.running.value = 0
-        socks = [self.sockets[x] for x in self.sockets.keys()]
-        for sock in socks:
+        for sock in self.socks:
             sock.close()
 
         self.logger.info("Shutdown")

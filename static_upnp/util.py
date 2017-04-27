@@ -84,3 +84,5 @@ def setup_sockets(self):
         sock.bind((ip, self.port))
 
         self.sockets[ip] = sock
+
+    self.socks = [self.sockets[x] for x in self.sockets.keys()]

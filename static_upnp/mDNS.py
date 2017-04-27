@@ -111,10 +111,9 @@ class mDNSResponder:
         self.logger = logging.getLogger("mDNSResponder.schedule_handler")
         self.logger.info("PID: %s" % os.getpid())
         register_worker_signal_handler(self.logger)
-        socks = [self.sockets[x] for x in self.sockets.keys()]
         while running.value:
             try:
-                ready = select.select(socks, [], [], 10)
+                ready = select.select(self.socks, [], [], 10)
                 for sock in ready:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
                     self.logger.log(0, rec)
@@ -126,7 +125,7 @@ class mDNSResponder:
             except KeyboardInterrupt as ki:
                 time.sleep(1)
 
-        for sock in socks:
+        for sock in self.socks:
             sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
@@ -150,7 +149,6 @@ class mDNSResponder:
                     self.logger.debug(msg)
                     msg = sr.response_generator(msg)
                     self.logger.debug(msg)
-                    for ip in self.sockets:
-                        sock = self.sockets[ip]
+                    for sock in self.socks:
                         for i in range(self.delivery_count):
                             sock.sendto(msg.pack(), ("224.0.0.251", 5353))
