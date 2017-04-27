@@ -140,7 +140,7 @@ class UPnPServiceResponder:
         register_worker_signal_handler(self.logger)
         while running.value:
             try:
-                ready = select.select(self.socks, [], [], 10)
+                ready = select.select([self.multi_sock], [], [], 10)
                 for sock in ready[0]:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
                     self.logger.debug(rec)
@@ -153,6 +153,7 @@ class UPnPServiceResponder:
         self.do_notify(b"ssdp:goodbye")
         for sock in self.socks:
             sock.close()
+        self.multi_sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
     def parse_request(self, request):
@@ -231,7 +232,7 @@ class UPnPServiceResponder:
         self.running.value = 0
         for sock in self.socks:
             sock.close()
-
+        self.multi_sock.close()
         self.logger.info("Shutdown")
         self.logger.info("---------------------------")
 

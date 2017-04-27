@@ -74,15 +74,20 @@ def setup_sockets(self):
 
     self.ip_addresses = ip_addresses
 
+    multi_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    multi_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    multi_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, self.ttl)
+
     for ip in ip_addresses:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, self.ttl)
+
         mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        multi_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         self.logger.info("Regestering multicast for: %s: %s"%(self.address, ip))
         sock.bind((ip, self.port))
 
         self.sockets[ip] = sock
 
+    multi_sock.bind(("", self.port))
     self.socks = [self.sockets[x] for x in self.sockets.keys()]
+    self.multi_sock = multi_sock

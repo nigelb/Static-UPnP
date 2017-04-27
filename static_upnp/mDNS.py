@@ -113,7 +113,7 @@ class mDNSResponder:
         register_worker_signal_handler(self.logger)
         while running.value:
             try:
-                ready = select.select(self.socks, [], [], 10)
+                ready = select.select([self.multi_sock], [], [], 10)
                 for sock in ready[0]:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
                     self.logger.log(0, rec)
@@ -127,6 +127,7 @@ class mDNSResponder:
 
         for sock in self.socks:
             sock.close()
+        self.multi_sock.close()
         self.logger.warn("Socket Handler shutting down...")
 
     def shutdown(self):
