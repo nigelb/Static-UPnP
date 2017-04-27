@@ -143,8 +143,11 @@ class UPnPServiceResponder:
                 ready = select.select([self.multi_sock], [], [], 10)
                 for sock in ready[0]:
                     rec = sock.recvfrom(self.buffer_size, socket.MSG_DONTWAIT)
-                    self.logger.debug(rec)
-                    queue.put(rec)
+                    if not rec[1][0] in self.ip_addresses:
+                        self.logger.debug(rec)
+                        queue.put(rec)
+                    else:
+                        self.logger.debug("Ignoring message from self...")
             except socket.error as se:
                 pass
             except Exception as e:
