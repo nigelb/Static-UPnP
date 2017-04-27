@@ -80,7 +80,7 @@ def setup_sockets(self):
 
     for ip in ip_addresses:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         mreq=socket.inet_aton(self.address)+socket.inet_aton(ip)
         multi_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         self.logger.info("Regestering multicast for: %s: %s"%(self.address, ip))
