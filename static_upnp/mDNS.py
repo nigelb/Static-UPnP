@@ -94,7 +94,9 @@ class mDNSResponder:
                 record = _queue.get(block=False)
                 if record is not None:
                     request = dns.DNSRecord.parse(record[0])
-                    self.handle_request(record, request)
+                    # Only handle DNS requests that have questions
+                    if len(request.questions) > 0:
+                        self.handle_request(record, request)
 
             except queue.Empty as error:
                 try:
