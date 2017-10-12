@@ -1,5 +1,5 @@
 # Static-UPnP
-Static UPnP responds to upnp search requests with staticlly configures responses.
+Static UPnP responds to upnp search requests with statically configured responses.
 This can be usefull to make devices available on other subnets, or to make devices available that are not responding to search requests.
 
 
