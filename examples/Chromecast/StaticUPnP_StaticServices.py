@@ -64,6 +64,7 @@ chromecast_service_descriptor = get_service_descriptor(chromecast_ip, chromecast
 chromecast_uuid = get_chromecast_uuid(chromecast_service_descriptor)
 chromecast_friendly_name = get_chromecast_friendly_name(chromecast_service_descriptor)
 chromecast_bs = "XXXXXXXXXXXX"
+chromecast_cd = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 services = [
     StaticService({
@@ -96,6 +97,6 @@ services = [
 ]
 
 mdns_services=[StaticMDNDService(
-    response_generator=lambda query: get_chromecast_mdns_response(query, chromecast_ip, chromecast_uuid, chromecast_friendly_name, chromecast_bs),
+    response_generator=lambda query: get_chromecast_mdns_response(query, chromecast_ip, chromecast_uuid, chromecast_friendly_name, chromecast_bs, chromecast_cd),
     dns_question=DNSQuestion(qname="_googlecast._tcp.local", qtype=QTYPE.PTR, qclass=32769)
 )]

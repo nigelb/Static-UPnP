@@ -55,7 +55,7 @@ def get_chromecast_mdns_response(query_data, chromecast_ip, chromecast_uuid, fri
     return [ans]
 
 
-def get_chromecast_mdns_response_2018_03(query_data, chromecast_ip, chromecast_uuid, friendly_name, bs, cd, rs, ca=4101, st=0, nf=1):
+def get_chromecast_mdns_response_2018_03(query_data, chromecast_ip, chromecast_uuid, friendly_name, bs, cd, rs="", ca=4101, st=0, nf=1):
     from dnslib import dns, RR, QTYPE, A, PTR, TXT, SRV
     query_a = query_data
     results = []
