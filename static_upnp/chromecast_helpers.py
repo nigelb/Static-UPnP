@@ -52,7 +52,44 @@ def get_chromecast_mdns_response(query_data, chromecast_ip, chromecast_uuid, fri
     ans.add_ar(RR(long_mdns_name, QTYPE.TXT, rdata=TXT(["id=%s"%collapsed_uuid, "rm=", "ve=05", "md=Chromecast", "ic=/setup/icon.png", "fn=%s"%friendly_name, "ca=4101", "st=0", "bs=%s"%bs, "rs="]), ttl=4500, rclass=32769))
     ans.add_ar(RR(long_mdns_name, QTYPE.SRV, rdata=SRV(0, 0, 8009, "%s.local"%chromecast_uuid), rclass=32769,ttl=120))
     ans.add_ar(RR("%s.local"%chromecast_uuid, QTYPE.A, rdata=A(chromecast_ip),rclass=32769,ttl=120))
-    return ans
+    return [ans]
+
+
+def get_chromecast_mdns_response_2018_03(query_data, chromecast_ip, chromecast_uuid, friendly_name, bs, cd, rs, ca=4101, st=0, nf=1):
+    from dnslib import dns, RR, QTYPE, A, PTR, TXT, SRV
+    query_a = query_data
+    results = []
+
+    collapsed_uuid=chromecast_uuid.replace("-","")
+    long_mdns_name = "Chromecast-%s-1._googlecast._tcp.local"%collapsed_uuid
+
+    print("======================================")
+    for question in query_a.questions:
+        print(question)
+        print("---------------")
+        ans = query_a.reply(ra=0)
+        ans.questions = []
+        ans.add_answer(RR(question.qname, QTYPE.PTR, rdata=PTR(long_mdns_name), ttl=120))
+        ans.add_ar(RR(long_mdns_name, QTYPE.TXT, rdata=TXT(["id=%s"%collapsed_uuid, "cd=%s"%cd,"rm=", "ve=05", "md=Chromecast", "ic=/setup/icon.png", "fn=%s"%friendly_name, "ca=%s"%ca, "st=%s"%st, "bs=%s"%bs, "nf=%s"%nf,"rs=%s"%rs]), ttl=4500, rclass=32769))
+        ans.add_ar(RR(long_mdns_name, QTYPE.SRV, rdata=SRV(0, 0, 8009, "%s.local"%chromecast_uuid), rclass=32769,ttl=120))
+        ans.add_ar(RR("%s.local"%chromecast_uuid, QTYPE.A, rdata=A(chromecast_ip),rclass=32769,ttl=120))
+        results.append(ans)
+    print("======================================")
+
+
+
+    # ans = query_a.reply(ra=0)
+    # ans.questions = []
+    # collapsed_uuid=chromecast_uuid.replace("-","")
+    # long_mdns_name = "Chromecast-%s._googlecast._tcp.local"%collapsed_uuid
+    # ans.add_answer(RR("_googlecast._tcp.local", QTYPE.PTR, rdata=PTR(long_mdns_name), ttl=120))
+    # ans.add_ar(RR(long_mdns_name, QTYPE.TXT, rdata=TXT(["id=%s"%collapsed_uuid, "rm=", "ve=05", "md=Chromecast", "ic=/setup/icon.png", "fn=%s"%friendly_name, "ca=4101", "st=0", "bs=%s"%bs, "rs="]), ttl=4500, rclass=32769))
+    # ans.add_ar(RR(long_mdns_name, QTYPE.SRV, rdata=SRV(0, 0, 8009, "%s.local"%chromecast_uuid), rclass=32769,ttl=120))
+    # ans.add_ar(RR("%s.local"%chromecast_uuid, QTYPE.A, rdata=A(chromecast_ip),rclass=32769,ttl=120))
+    #
+    # results.append(ans)
+
+    return results
 
 
 def get_date():

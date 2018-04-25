@@ -150,8 +150,9 @@ class mDNSResponder:
             for sr in self.services:
                 if sr.matches(msg):
                     self.logger.debug(msg)
-                    msg = sr.response_generator(msg)
+                    messages = sr.response_generator(msg)
                     self.logger.debug(msg)
-                    for sock in self.socks:
-                        for i in range(self.delivery_count):
-                            sock.sendto(msg.pack(), (self.address, self.port))
+                    for msg in messages:
+                        for sock in self.socks:
+                            for i in range(self.delivery_count):
+                                sock.sendto(msg.pack(), (self.address, self.port))
