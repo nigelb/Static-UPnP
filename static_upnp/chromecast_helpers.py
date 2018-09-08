@@ -38,7 +38,7 @@ def get_chromecast_friendly_name(service_descriptor):
     ns = {
         'cc': 'urn:schemas-upnp-org:device-1-0',
     }
-    return root.find("./cc:device/cc:friendlyName", ns).text
+    return root.find("./cc:device/cc:friendlyName", ns).text.encode("utf-8")
 
 def get_chromecast_mdns_response_2017_22(query_data, chromecast_ip, chromecast_uuid, friendly_name, bs):
     from dnslib import dns, RR, QTYPE, A, PTR, TXT, SRV
